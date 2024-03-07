@@ -4,13 +4,13 @@ import torch
 import torchhd
 
 import tqdm
+from debug_utils import *
 
 torch.manual_seed(0)
 
-
 def binarize(x):
     return torch.where(x>0, 1, -1).int()
-    
+
 def min_max_quantize(inp, bits):
     assert bits >= 1, bits
     if bits == 1:
@@ -26,7 +26,6 @@ def min_max_quantize(inp, bits):
     v = v - v.min()
     return v.int()
 
-
 def train_init(model, inp_enc, target):
     assert inp_enc.shape[0] == target.shape[0]
 
@@ -35,7 +34,6 @@ def train_init(model, inp_enc, target):
         model.class_hvs[i] = (
             binarize(inp_enc[idx].sum(dim=0)) if model.binary else inp_enc[idx].sum(dim=0)
         )
-
 
 def test(model, inp_enc, target):
     assert inp_enc.shape[0] == target.shape[0]
@@ -51,7 +49,6 @@ def test(model, inp_enc, target):
     acc = acc.float().mean()
 
     return acc
-
 
 def train(model, inp_enc, target):
     assert inp_enc.shape[0] == target.shape[0]
@@ -87,7 +84,6 @@ class HDC_ID_LV:
 
     def encode(self, inp):
         assert inp.shape[1] == self.n_id
-
         # ID-LV encoding
         n_batch = inp.shape[0]
         inp_enc = torch.zeros(n_batch, self.n_dim, dtype=torch.int)
@@ -100,8 +96,8 @@ class HDC_ID_LV:
             # for j in range(self.n_id):
             # tmp = tmp + (self.hv_id[j] * self.hv_lv[inp_quant[i][j]])
             # inp_enc[i] = tmp
-
-        return binarize(inp_enc).int() if self.binary else inp_enc
+        return_val = binarize(inp_enc).int() if self.binary else inp_enc
+        return return_val
 
 
 class HDC_RP:
