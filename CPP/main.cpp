@@ -4,7 +4,6 @@
 #include <sstream>
 
 
-using namespace std; 
 #define DATASET "EMG_Hand"
 typedef struct {
     int test_size;
@@ -26,7 +25,7 @@ int load_dataset(pdataset_t &pdataset) {
 
         std::ifstream file(filename);
         if (!file.is_open()) {
-            std::cerr << "Error opening file" << std::endl;
+            std::cerr << "Error opening file " << filename << std::endl;
             return 1;
         }
 
@@ -48,7 +47,7 @@ int load_dataset(pdataset_t &pdataset) {
 
         std::ifstream file(filename);
         if (!file.is_open()) {
-            std::cerr << "Error opening file" << std::endl;
+            std::cerr << "Error opening file " << filename << std::endl;
             return 1;
         }
 
@@ -76,7 +75,7 @@ int load_dataset(pdataset_t &pdataset) {
 
         std::ifstream file(filename);
         if (!file.is_open()) {
-            std::cerr << "Error opening file" << std::endl;
+            std::cerr << "Error opening file " << filename << std::endl;
             return 1;
         }
 
@@ -101,7 +100,7 @@ int load_dataset(pdataset_t &pdataset) {
 
         std::ifstream file(filename);
         if (!file.is_open()) {
-            std::cerr << "Error opening file" << std::endl;
+            std::cerr << "Error opening file " << filename << std::endl;
             return 1;
         }
 
@@ -146,19 +145,50 @@ int load_dataset(pdataset_t &pdataset) {
         }
     }
 
-
+    // DBG
+    std::cout << pdataset->test_val << std::endl;
     return 0;
 }
 
+int get_checksum(pdataset_t &pdataset) { 
+    int N = (1L << 20);
+    int acc = 0;
+    std::cout << "Flag 8" << std::endl;
+    std::cout << pdataset->test_val << std::endl;
+    
+    for (int sample_idx = 0; sample_idx < pdataset->train_size; sample_idx++)
+    {
+        for (int point_idx = 0; point_idx < pdataset->sample_size; point_idx++)
+        {
+            acc = (pdataset->train_val[sample_idx][point_idx] + acc) % N;
+        }
+    }
+    std::cout << "Flag 9" << std::endl;
+
+    for (int sample_idx = 0; sample_idx < pdataset->test_size; sample_idx++)
+    {
+        for (int point_idx = 0; point_idx < pdataset->sample_size; point_idx++)
+        {
+            acc = (pdataset->test_val[sample_idx][point_idx] + acc) % N;
+        }
+    }
+    std::cout << "Flag 10" << std::endl;
+
+    return acc; 
+}
 
 int main() {
     pdataset_t pdataset = (pdataset_t)malloc(sizeof(dataset_t));
     if(load_dataset(pdataset)) {
+
+        std::cout << "Error loading the dataset ..." << std::endl;
         return 1;
     }
-    cout << "test_size: " << pdataset->test_size << endl;
-    cout << "train_size: " << pdataset->train_size << endl;
-    cout << "sample_size: " << pdataset->sample_size << endl;
+    std::cout << "val: " << pdataset->train_val[0][0] << std::endl;
+    std::cout << "Checksum: " << get_checksum(pdataset) << std::endl;
+    std::cout << "test_size: " << pdataset->test_size << std::endl;
+    std::cout << "train_size: " << pdataset->train_size << std::endl;
+    std::cout << "sample_size: " << pdataset->sample_size << std::endl;
 
 
     return 0; 

@@ -15,6 +15,8 @@ ds_train, ds_test = utils.load_dataset(name="EMG_Hand")
 # ds_train, ds_test = utils.load_dataset(name="UCIHAR")
 # ds_train, ds_test = utils.load_dataset(name="ISOLET")
 utils.save_dataset(ds_train, ds_test, name="EMG_Hand")
+print("Checksum: ", utils.get_checksum(ds_train, ds_test))
+
 n_class = ds_train[1].max() + 1 
 n_id = ds_train[0].shape[1]
 

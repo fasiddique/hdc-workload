@@ -122,3 +122,15 @@ def save_dataset(data_train, data_test, name):
     filename = '../CPP/dataset/' + name + '/parameters'
     with open(filename, 'w') as file:
         file.write(line + "\n")
+
+
+def get_checksum(data_train, data_test): 
+    acc = 0 
+    N = (2 ** 20)
+    for sample in data_train[0]:
+            for value in sample: 
+                acc = (value.item() + acc ) % N
+    for sample in data_test[0]:
+            for value in sample: 
+                acc = (value.item() + acc ) % N
+    return acc 
