@@ -84,3 +84,41 @@ def load_dataset(name, path=None):
 
     return data_train, data_test
 
+
+
+def save_dataset(data_train, data_test, name):
+    filename = '../CPP/dataset/' + name + '/train.val'
+    with open(filename, 'w') as file:
+        for sample in data_train[0]:
+            line = ""
+            for value in sample: 
+                line += str(value.item()) + " "
+            file.write(line + "\n")
+
+    filename = '../CPP/dataset/' + name + '/train.label'
+    with open(filename, 'w') as file:
+        for label in data_train[1]:
+            line = str(label.item())
+            file.write(line + "\n")
+
+    filename = '../CPP/dataset/' + name + '/test.val'
+    with open(filename, 'w') as file:
+        for sample in data_test[0]:
+            line = ""
+            for value in sample: 
+                line += str(value.item()) + " "
+            file.write(line + "\n")
+
+    filename = '../CPP/dataset/' + name + '/test.label'
+    with open(filename, 'w') as file:
+        for label in data_test[1]:
+            line = str(label.item())
+            file.write(line + "\n")
+
+    test_size = data_test[1].size()[0]
+    train_size = data_train[1].size()[0]
+    sample_size = data_train[0][1].size()[0]
+    line = str(test_size) + "\n" + str(train_size) + "\n" + str(sample_size)
+    filename = '../CPP/dataset/' + name + '/parameters'
+    with open(filename, 'w') as file:
+        file.write(line + "\n")
