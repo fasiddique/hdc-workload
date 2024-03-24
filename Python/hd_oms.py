@@ -10,8 +10,8 @@ import utils
 dim_spectra = 34976
 charge = 2
 
-ref_fname = f"../dataset/human_yeast_targetdecoy_vec_{dim_spectra}.charge{charge}.npz"
-query_fname = f"../dataset/iPRG2012_vec_{dim_spectra}.charge{charge}.npz"
+ref_fname = f"./dataset/human_yeast_targetdecoy_vec_{dim_spectra}.charge{charge}.npz"
+query_fname = f"./dataset/iPRG2012_vec_{dim_spectra}.charge{charge}.npz"
 
 ds_ref, ds_query = utils.load_dataset(
     name="OMS_iPRG_demo", path=[ref_fname, query_fname]
