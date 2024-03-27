@@ -12,7 +12,7 @@ SOURCES=$(wildcard *.cpp)
 # Derive object file names from the source file names
 OBJECTS=$(SOURCES:.cpp=.o)
 # Define the executable name
-EXECUTABLE=hdc-workload
+EXECUTABLE=hdc-workload.out
 
 # First rule is the one executed when no parameters are fed to the Makefile
 all: $(EXECUTABLE)
