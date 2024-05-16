@@ -11,7 +11,6 @@ torch.manual_seed(0)
 def binarize(x):
     return torch.where(x > 0, 1, -1).int()
 
-
 def min_max_quantize(inp, bits):
     assert bits >= 1, bits
     if bits == 1:
@@ -74,7 +73,6 @@ def train(model, inp_enc, target):
             model.class_hvs[target[j]] += inp_enc[j]
             model.class_hvs[pred] -= inp_enc[j]
 
-
 def generate_lv_id_hvs(n_lv, n_id, n_dim, method="random"):
     def gen_cyclic_lv_hvs(n_dim: int, n_lv: int):
         base = np.ones(n_dim)
@@ -115,7 +113,6 @@ def generate_lv_id_hvs(n_lv, n_id, n_dim, method="random"):
 
     return hv_lv, hv_id
 
-
 class HDC_ID_LV:
     def __init__(
         self, n_class, n_lv, n_id, n_dim, method_id_lv="random", binary=True
@@ -138,13 +135,13 @@ class HDC_ID_LV:
             inp_enc = torch.zeros(n_batch, self.n_dim, dtype=torch.int)
             for i in tqdm.tqdm(range(n_batch)):
                 # Vectorized version
-                inp_enc[i] = (self.hv_id * self.hv_lv[inp[i].long()]).sum(dim=0)
-
+                # inp_enc[i] = (self.hv_id * self.hv_lv[inp[i].long()]).sum(dim=0)
+                
                 # Serial version
-                # tmp = torch.zeros(1, self.n_dim, dtype=torch.int)
-                # for j in range(self.n_id):
-                # tmp = tmp + (self.hv_id[j] * self.hv_lv[inp_quant[i][j]])
-                # inp_enc[i] = tmp
+                tmp = torch.zeros(1, self.n_dim, dtype=torch.int)
+                for j in range(self.n_id):
+                    tmp = tmp + (self.hv_id[j] * self.hv_lv[inp[i][j]])
+                inp_enc[i] = tmp
         else:
             n_batch = inp["lv"].shape[0]
             inp_enc = torch.zeros(n_batch, self.n_dim, dtype=torch.int)
@@ -153,8 +150,8 @@ class HDC_ID_LV:
                 lv = inp["lv"][i, idx_effective].long()
                 id = inp["idx"][i, idx_effective].long()
                 inp_enc[i] = (self.hv_id[id] * self.hv_lv[lv]).sum(dim=0)
+            
         return binarize(inp_enc).int() if self.binary else inp_enc
-
 
 class HDC_RP:
     def __init__(self, n_class, n_feat, n_dim, binary=True) -> None:

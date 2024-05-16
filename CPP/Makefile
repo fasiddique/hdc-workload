@@ -9,8 +9,10 @@ LDFLAGS=
 
 # Find all cpp files in the current directory
 SOURCES=$(wildcard *.cpp)
-# Derive object file names from the source file names
-OBJECTS=$(SOURCES:.cpp=.o)
+
+# Derive object file names from the source file names and place them in the obj directory
+OBJECTS=$(patsubst %.cpp, obj/%.o, $(SOURCES))
+
 # Define the executable name
 EXECUTABLE=hdc-workload.out
 
@@ -20,20 +22,25 @@ all: $(EXECUTABLE)
 $(EXECUTABLE): $(OBJECTS)
 	$(CXX) $(LDFLAGS) -o $@ $^
 
-# Rule for object files, each cpp file is compiled to an object file
-%.o: %.cpp
+# Create the obj directory if it doesn't exist
+obj/%.o: %.cpp | obj
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+# Rule for creating the obj directory
+obj:
+	mkdir -p obj
 
 # Rule for cleaning up
 clean:
 	rm -f $(OBJECTS) $(EXECUTABLE) $(wildcard *.d)
+	rm -rf obj
 
 # Rule for making everything afresh
 rebuild: clean all
 
 # Include dependencies
--include $(OBJECTS:.o=.d)
+-include $(patsubst %.cpp, obj/%.d, $(SOURCES))
 
 # Rule to generate a dependency file for each source file
-%.d: %.cpp
-	@$(CPP) $(CXXFLAGS) $< -MM -MT $(@:.d=.o) >$@
+obj/%.d: %.cpp | obj
+	@$(CPP) $(CXXFLAGS) $< -MM -MT $(patsubst %.cpp, obj/%.o, $<) >$@

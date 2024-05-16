@@ -1,8 +1,6 @@
-
 .PHONY: python cpp 
 
 default: cpp
-
 
 python: 
 	cd Python && make && cd ..

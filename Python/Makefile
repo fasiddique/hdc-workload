@@ -5,3 +5,6 @@ all: run
 run: 
 	$(PYTHON) hd_classification.py
 
+encode_test: 
+	$(PYTHON) encode_test.py
+
