@@ -4,6 +4,9 @@
 #include <sstream>
 #include <vector>
 #include "dataset.h"
+#include "utils.h"
+#include "hdc.h"
+
 
 /**
  * @brief Test function to demonstrate the usage of the Dataset class.
@@ -70,7 +73,6 @@ bool test_dataset() {
     return false;
 }
 
-
 /**
  * @brief Tests reading a tensor from a binary file and stores it in a 2D vector.
  *
@@ -115,20 +117,56 @@ bool test_read_tensor() {
     return false;
 }
 
+bool test_encode() {
+    // Initialize inputs for testing 
+    int n_data = 1; // 1735
+    int n_class = 5;
+    int n_lv = 21;
+    int n_id = 1024;
+    int N_DIM = 2048;
+    bool BINARY = false;
 
+    int fixed_value = 0;
 
+    // Define the shape
+    std::vector<std::vector<int>> fixed_value_tensor(n_data, std::vector<int>(n_id, fixed_value));
 
-/**
- * @brief Main function to execute the test_dataset function.
- * 
- * This function calls the test_dataset function and returns its result.
- * 
- * @return 0 if the test_dataset function succeeds, 1 otherwise.
- */
-int main() {
-    if (test_read_tensor()) {
+    // HDC Model
+    HDC hdc_model(n_class, n_lv, n_id, N_DIM, BINARY);
+
+    // HDC Encoding Step
+    std::vector<std::vector<int>> fixed_value_tensor_enc = hdc_model.encode(fixed_value_tensor);
+
+    // Print encoded tensor shape
+    std::cout << "[DEBUG] fixed_value_tensor_enc.size() = " << fixed_value_tensor_enc.size() << " x " << fixed_value_tensor_enc[0].size() << std::endl;
+
+    // Print encoded tensor
+    print_2d_vector(fixed_value_tensor_enc);
+
+    // Save to a file
+    std::ofstream outfile("tensor_data.bin", std::ios::binary);
+    if (!outfile) {
+        std::cerr << "Error opening file for writing" << std::endl;
         return true;
     }
 
+    for (const auto& vec : fixed_value_tensor_enc) {
+        outfile.write(reinterpret_cast<const char*>(vec.data()), vec.size() * sizeof(int));
+    }
+
+    outfile.close();
     return false;
+}
+
+
+
+
+int main() {
+    bool result = test_encode();
+    if (result) {
+        std::cerr << "Test failed." << std::endl;
+        return 1;
+    }
+    std::cout << "Test passed." << std::endl;
+    return 0;
 }

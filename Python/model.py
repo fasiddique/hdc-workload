@@ -100,8 +100,10 @@ def generate_lv_id_hvs(n_lv, n_id, n_dim, method="random"):
         return np.vstack(ids)
 
     if method == "random":
-        hv_lv = torch.randint(0, 2, size=(n_lv, n_dim), dtype=torch.int) * 2 - 1
-        hv_id = torch.randint(0, 2, size=(n_id, n_dim), dtype=torch.int) * 2 - 1
+        fixed_value = 2  # Replace this with the desired fixed value
+        hv_lv = torch.full((n_lv, n_dim), fixed_value, dtype=torch.int)
+        hv_id = torch.full((n_id, n_dim), fixed_value, dtype=torch.int)
+
     elif method == "cyclic":
         hv_lv = gen_cyclic_lv_hvs(n_dim, n_lv)
         hv_lv = torch.from_numpy(hv_lv).int()
