@@ -28,6 +28,46 @@ public:
      * @return Encoded hyperdimensional vectors.
      */
     std::vector<std::vector<int>> encode(const std::vector<std::vector<int>>& inp);
+    
+    /**
+    * @brief Initializes the class hypervectors based on encoded inputs and target labels.
+    * @param inp_enc Encoded input data.
+    * @param target Target labels.
+    */
+    void train_init(const std::vector<std::vector<int>>& inp_enc, const std::vector<int>& target);
+
+    /**
+     * @brief Getter for the class hypervectors.
+     * @return Class hypervectors.
+     */
+    const std::vector<std::vector<int>>& get_class_hvs() const;
+
+
+    /**
+    * @brief Computes the accuracy of the model on the test data.
+    *
+    * This function calculates the dot product between the input encodings and the class hypervectors.
+    * If the model is not binary, it normalizes the distances. Finally, it computes the accuracy by
+    * comparing the predicted labels to the target labels.
+    *
+    * @param inp_enc The encoded input data to be tested.
+    * @param target The target labels for the input data.
+    * @return The accuracy of the model on the test data.
+    */
+    double test(const std::vector<std::vector<int>>& inp_enc, const std::vector<int>& target);
+
+
+    /**
+    * @brief Trains the HDC model using the input encodings and target labels.
+    *
+    * This function updates the class hypervectors based on the input encodings and
+    * target labels. If the predicted label does not match the target label, the
+    * function updates the class hypervectors accordingly.
+    *
+    * @param inp_enc The encoded input data.
+    * @param target The target labels for the input data.
+    */
+    void train(const std::vector<std::vector<int>>& inp_enc, const std::vector<int>& target);
 
 private:
     int n_class; ///< Number of classes.
@@ -48,6 +88,10 @@ private:
      * @return Generated hyperdimensional vectors.
      */
     std::vector<std::vector<int>> generate_hvs(int n, int dim);
+
+
+    
+
 };
 
 #endif // HDC_H

@@ -126,8 +126,11 @@ class HDC_ID_LV:
         self.hv_lv, self.hv_id = generate_lv_id_hvs(
             n_lv, n_id, n_dim, method=method_id_lv
         )
-
         self.class_hvs = torch.zeros(n_class, n_dim, dtype=torch.int)
+
+
+    def get_class_hvs(self): 
+        return self.class_hvs
 
     def encode(self, inp, dense=True):
         # ID-LV encoding

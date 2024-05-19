@@ -159,10 +159,94 @@ bool test_encode() {
 }
 
 
+/**
+ * @brief Fills a vector with a fixed value.
+ * @param n Number of vectors to generate.
+ * @param m Size of each vector.
+ * @param value Fixed value to fill the vectors.
+ * @return Filled vector of vectors.
+ */
+std::vector<std::vector<int>> fill_vector(size_t n, size_t m, int value) {
+    return std::vector<std::vector<int>>(n, std::vector<int>(m, value));
+}
+
+/**
+ * @brief Test function for the HDC class.
+ */
+bool train_test() {
+    // Initialize inputs for testing
+    size_t n_train_data = 1; // 1735
+    size_t n_test_data = 1; // 579
+    int n_class = 5;
+    int n_lv = 5; // 21
+    int n_id = 32; // 1024
+    int N_DIM = 64; // 2048
+    bool BINARY = false;
+
+    int train_fixed_value = 0;
+    int test_fixed_value = 0;
+
+    auto ds_train = std::make_pair(fill_vector(n_train_data, n_id, train_fixed_value),
+                                   std::vector<int>(n_train_data, train_fixed_value));
+
+    auto ds_test = std::make_pair(fill_vector(n_test_data, n_id, test_fixed_value),
+                                  std::vector<int>(n_test_data, test_fixed_value));
+
+    // HDC Model
+    HDC hdc_model(n_class, n_lv, n_id, N_DIM, BINARY);
+
+    // HDC Encoding Step
+    std::vector<std::vector<int>> train_enc = hdc_model.encode(ds_train.first);
+    std::vector<std::vector<int>> test_enc = hdc_model.encode(ds_test.first);
+
+    // Init. Training
+    hdc_model.train_init(train_enc, ds_train.second);
+
+    // Print class hypervectors
+    const auto& class_hvs = hdc_model.get_class_hvs();
+    for (const auto& hv : class_hvs) {
+        for (const auto& val : hv) {
+            std::cout << val << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    // Initial test accuracy
+    double test_acc = hdc_model.test(test_enc, ds_test.second);
+    std::cout << "Init. test acc. is " << test_acc << std::endl;
+
+
+    // Re-training
+    int train_epochs = 20;
+    int val_epochs = 5;
+
+    for (int i = 0; i < train_epochs; ++i) {
+        hdc_model.train(train_enc, ds_train.second);
+
+        if ((i + 1) % val_epochs == 0) {
+            test_acc = hdc_model.test(test_enc, ds_test.second);
+            std::cout << "Test acc. @ epoch " << (i + 1) << "/" << train_epochs << " is " << test_acc << std::endl;
+        }
+    }
+
+    test_acc = hdc_model.test(test_enc, ds_test.second);
+    std::cout << "Final test acc. is " << test_acc << std::endl;
+
+    // if (BINARY) {
+    //     for (auto& hv : hdc_model.get_class_hvs()) {
+    //         hv = binarize(hv);
+    //     }
+    // }
+
+    return false;
+}
+
+
+
 
 
 int main() {
-    bool result = test_encode();
+    bool result = train_test();
     if (result) {
         std::cerr << "Test failed." << std::endl;
         return 1;

@@ -38,7 +38,10 @@ print("[DEBUG] n_lv = ", n_lv)
 print("[DEBUG] n_id = ", n_id)
 print("[DEBUG] N_DIM = ", N_DIM)
 print("[DEBUG] BINARY = ", BINARY)
-print("[DEBUG] ds_train.shape = ", ds_train[0].shape)
+print("[DEBUG] ds_train[0].shape = ", ds_train[0].shape)
+print("[DEBUG] ds_train[1].shape = ", ds_train[1].shape)
+print("[DEBUG] ds_test[0].shape = ", ds_test[0].shape)
+print("[DEBUG] ds_test[1].shape = ", ds_test[1].shape)
 breakpoint()
 
 # HDC Model
@@ -59,7 +62,6 @@ print(f"Init. test acc. is {test_acc:.4f}")
 train_epochs = 20
 val_epochs = 5
 
-print("[DEBUG] flag 0")
 
 for i in tqdm.tqdm(range(train_epochs)):
     model.train(hdc_model, inp_enc=train_enc, target=ds_train[1])
@@ -68,7 +70,6 @@ for i in tqdm.tqdm(range(train_epochs)):
         test_acc = model.test(hdc_model, inp_enc=test_enc, target=ds_test[1])
         print(f"Test acc. @ epoch {i+1}/{train_epochs} is {test_acc:.4f}")
 
-print("[DEBUG] flag 1")
 
 test_acc = model.test(hdc_model, inp_enc=test_enc, target=ds_test[1])
 print(f"Init. test acc. is {test_acc:.4f}")

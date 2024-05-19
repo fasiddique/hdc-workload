@@ -17,6 +17,7 @@ std::vector<int> binarize(const std::vector<int>& x) {
     return result;
 }
 
+
 /**
  * @brief Generates a random integer vector.
  * 
