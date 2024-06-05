@@ -50,22 +50,27 @@ def encode_test():
 
 def train_test(): 
     # Initialize inputs for testing 
-    n_train_data = 1 # 1735
-    n_test_data = 1 # 579
-    n_class =  torch.tensor(5)
     n_lv =  5 # 21
-    n_id =  32 # 1024
-    N_DIM =  64 # 2048
+    N_DIM =  2048
     BINARY =  False
-
-
-    train_fixed_value = 0
-    test_fixed_value = 0 
     
-    ds_train = (torch.full(torch.Size([n_train_data, n_id]), train_fixed_value), torch.full(torch.Size([n_train_data]), train_fixed_value))
+    ds_train, ds_test = utils.load_dataset(name="EMG_Hand")
 
-    ds_test = (torch.full(torch.Size([n_test_data, n_id]), test_fixed_value), torch.full(torch.Size([n_test_data]), test_fixed_value))
-
+    n_class = ds_train[1].max() + 1 # Number of classes in the dataset
+    n_id = ds_train[0].shape[1] # Number of input dimensions 
+    
+    if ds_train[0].dtype in [torch.int, torch.uint8, torch.int64]:
+        n_lv = int(ds_train[0].max()) + 1 
+ 
+    print("[DEBUG] n_class = ", n_class)
+    print("[DEBUG] n_lv = ", n_lv)
+    print("[DEBUG] n_id = ", n_id)
+    print("[DEBUG] N_DIM = ", N_DIM)
+    print("[DEBUG] BINARY = ", BINARY)
+    print("[DEBUG] ds_train[0].shape = ", ds_train[0].shape)
+    print("[DEBUG] ds_train[1].shape = ", ds_train[1].shape)
+    print("[DEBUG] ds_test[0].shape = ", ds_test[0].shape)
+    print("[DEBUG] ds_test[1].shape = ", ds_test[1].shape)
 
     # HDC Model
     hdc_model = model.HDC_ID_LV(
@@ -75,7 +80,6 @@ def train_test():
     # HDC Encoding Step
     train_enc = hdc_model.encode(ds_train[0])
     test_enc = hdc_model.encode(ds_test[0])
-
 
     # Init. Training
     model.train_init(hdc_model, inp_enc=train_enc, target=ds_train[1])
@@ -101,11 +105,6 @@ def train_test():
 
     if BINARY:
         hdc_model.class_hvs = hdc_model.class_hvs.sign()
-
-
-
-
-
 
 
 if __name__ == "__main__": 

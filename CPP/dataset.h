@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <utility>
 
 #define DATASET "EMG_Hand"
 
@@ -107,6 +108,20 @@ public:
      * @return The calculated checksum.
      */
     int get_checksum();
+
+    /**
+     * @brief Returns the training set as a pair of values and labels.
+     * 
+     * @return A pair of vectors, where the first vector contains the values and the second vector contains the labels.
+     */
+    std::pair<std::vector<std::vector<int>>, std::vector<int>> get_trainset();
+
+    /**
+     * @brief Returns the test set as a pair of values and labels.
+     * 
+     * @return A pair of vectors, where the first vector contains the values and the second vector contains the labels.
+     */
+    std::pair<std::vector<std::vector<int>>, std::vector<int>> get_testset();
 };
 
 bool Dataset::read_parameters(const std::string &filename) {
@@ -174,6 +189,14 @@ int Dataset::get_checksum() {
     }
 
     return acc;
+}
+
+std::pair<std::vector<std::vector<int>>, std::vector<int>> Dataset::get_trainset() {
+    return std::make_pair(train.values, train.labels);
+}
+
+std::pair<std::vector<std::vector<int>>, std::vector<int>> Dataset::get_testset() {
+    return std::make_pair(test.values, test.labels);
 }
 
 #endif // DATASET_H

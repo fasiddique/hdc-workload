@@ -21,7 +21,7 @@ bool test_dataset() {
     // Create a Dataset object
     Dataset dataset;
 
-    // Load the dataset
+    //  
     if (dataset.load_dataset() != 0) {
         std::cerr << "Failed to load the dataset" << std::endl;
         return true;
@@ -158,7 +158,6 @@ bool test_encode() {
     return false;
 }
 
-
 /**
  * @brief Fills a vector with a fixed value.
  * @param n Number of vectors to generate.
@@ -174,42 +173,41 @@ std::vector<std::vector<int>> fill_vector(size_t n, size_t m, int value) {
  * @brief Test function for the HDC class.
  */
 bool train_test() {
-    // Initialize inputs for testing
-    size_t n_train_data = 1; // 1735
-    size_t n_test_data = 1; // 579
-    int n_class = 5;
-    int n_lv = 5; // 21
-    int n_id = 32; // 1024
-    int N_DIM = 64; // 2048
+    int N_DIM = 2048;
     bool BINARY = false;
 
-    int train_fixed_value = 0;
-    int test_fixed_value = 0;
+    // Create a Dataset object
+    Dataset dataset;
 
-    auto ds_train = std::make_pair(fill_vector(n_train_data, n_id, train_fixed_value),
-                                   std::vector<int>(n_train_data, train_fixed_value));
+    if (dataset.load_dataset() != 0) {
+        std::cerr << "Failed to load the dataset" << std::endl;
+        return true;
+    }
 
-    auto ds_test = std::make_pair(fill_vector(n_test_data, n_id, test_fixed_value),
-                                  std::vector<int>(n_test_data, test_fixed_value));
+    // Print dataset parameters
+    std::cout << "Test Size: " << dataset.test_size << std::endl;
+    std::cout << "Train Size: " << dataset.train_size << std::endl;
+    std::cout << "Sample Size: " << dataset.sample_size << std::endl;
+
+
+    // Initialize inputs for testing
+    int n_class = 5; // TODO: avoid hardcoding 
+    int n_lv = 21; // TODO: avoid hardcoding 
+    int n_id = dataset.sample_size;
+
+    auto ds_train = dataset.get_trainset();
+    auto ds_test = dataset.get_testset();
 
     // HDC Model
     HDC hdc_model(n_class, n_lv, n_id, N_DIM, BINARY);
 
     // HDC Encoding Step
     std::vector<std::vector<int>> train_enc = hdc_model.encode(ds_train.first);
+
     std::vector<std::vector<int>> test_enc = hdc_model.encode(ds_test.first);
 
     // Init. Training
     hdc_model.train_init(train_enc, ds_train.second);
-
-    // Print class hypervectors
-    const auto& class_hvs = hdc_model.get_class_hvs();
-    for (const auto& hv : class_hvs) {
-        for (const auto& val : hv) {
-            std::cout << val << " ";
-        }
-        std::cout << std::endl;
-    }
 
     // Initial test accuracy
     double test_acc = hdc_model.test(test_enc, ds_test.second);

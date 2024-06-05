@@ -22,7 +22,7 @@ HDC::HDC(int n_class, int n_lv, int n_id, int n_dim, bool binary)
 std::vector<std::vector<int>> HDC::encode(const std::vector<std::vector<int>>& inp) {
     int n_batch = inp.size();
     std::vector<std::vector<int>> inp_enc(n_batch, std::vector<int>(n_dim, 0));
-
+    
     for (int i = 0; i < n_batch; ++i) {
         std::vector<int> tmp(n_dim, 0);
         for (int j = 0; j < n_id; ++j) {
