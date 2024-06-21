@@ -91,7 +91,7 @@ def save_dataset(data_train, data_test, name):
     with open(filename, 'w') as file:
         for sample in data_train[0]:
             line = ""
-            for value in sample: 
+            for value in sample:
                 line += str(value.item()) + " "
             file.write(line + "\n")
 
@@ -105,7 +105,7 @@ def save_dataset(data_train, data_test, name):
     with open(filename, 'w') as file:
         for sample in data_test[0]:
             line = ""
-            for value in sample: 
+            for value in sample:
                 line += str(value.item()) + " "
             file.write(line + "\n")
 
@@ -119,18 +119,34 @@ def save_dataset(data_train, data_test, name):
     train_size = data_train[1].size()[0]
     sample_size = data_train[0][1].size()[0]
     line = str(test_size) + "\n" + str(train_size) + "\n" + str(sample_size)
-    filename = '../CPP/dataset/' + name + '/parameters'
+    filename = '../CPP/dataset/' + name + '/dataset_parameters'
     with open(filename, 'w') as file:
         file.write(line + "\n")
 
 
-def get_checksum(data_train, data_test): 
-    acc = 0 
+def save_hdc_params(dataset_name, n_dim=2048, binary=False, train_epochs=20, n_lv=32):
+    filename = '../CPP/dataset/' + dataset_name + '/hdc_parameters'
+    with open(filename, 'w') as file:
+        line = str(n_dim)
+        file.write(line + "\n")
+
+        line = str(int(binary))
+        file.write(line + "\n")
+
+        line = str(train_epochs)
+        file.write(line + "\n")
+
+        line = str(n_lv)
+        file.write(line + "\n")
+
+
+def get_checksum(data_train, data_test):
+    acc = 0
     N = (2 ** 20)
     for sample in data_train[0]:
-            for value in sample: 
+            for value in sample:
                 acc = (value.item() + acc ) % N
     for sample in data_test[0]:
-            for value in sample: 
+            for value in sample:
                 acc = (value.item() + acc ) % N
-    return acc 
+    return acc

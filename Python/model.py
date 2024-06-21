@@ -4,12 +4,13 @@ import torch
 import numpy as np
 
 import tqdm
-from debug_utils import *
 
 torch.manual_seed(0)
 
+
 def binarize(x):
     return torch.where(x > 0, 1, -1).int()
+
 
 def min_max_quantize(inp, bits):
     assert bits >= 1, bits
@@ -26,6 +27,7 @@ def min_max_quantize(inp, bits):
     v = v - v.min()
     return v.int()
 
+
 def train_init(model, inp_enc, target):
     assert inp_enc.shape[0] == target.shape[0]
 
@@ -37,6 +39,7 @@ def train_init(model, inp_enc, target):
             else inp_enc[idx].sum(dim=0)
         )
 
+
 def test(model, inp_enc, target):
     assert inp_enc.shape[0] == target.shape[0]
 
@@ -45,12 +48,13 @@ def test(model, inp_enc, target):
         dist = torch.matmul(inp_enc, binarize(model.class_hvs).T)
     else:
         dist = torch.matmul(inp_enc, model.class_hvs.T)
-        dist = dist / model.class_hvs.float().norm(dim=1)
+        # dist = dist / model.class_hvs.float().norm(dim=1)
 
     acc = dist.argmax(dim=1) == target.long()
     acc = acc.float().mean()
 
     return acc
+
 
 def train(model, inp_enc, target):
     assert inp_enc.shape[0] == target.shape[0]
@@ -63,7 +67,7 @@ def train(model, inp_enc, target):
             pred = torch.matmul(inp_enc[j], binarize(model.class_hvs).T).argmax()
         else:
             dist = torch.matmul(inp_enc[j], model.class_hvs.T)
-            dist = dist / model.class_hvs.float().norm(dim=1)
+            # dist = dist / model.class_hvs.float().norm(dim=1)
             pred = dist.argmax()
 
         # if model.binary:
@@ -72,6 +76,7 @@ def train(model, inp_enc, target):
         if pred != target[j]:
             model.class_hvs[target[j]] += inp_enc[j]
             model.class_hvs[pred] -= inp_enc[j]
+
 
 def generate_lv_id_hvs(n_lv, n_id, n_dim, method="random"):
     def gen_cyclic_lv_hvs(n_dim: int, n_lv: int):
@@ -100,10 +105,8 @@ def generate_lv_id_hvs(n_lv, n_id, n_dim, method="random"):
         return np.vstack(ids)
 
     if method == "random":
-        fixed_value = 2  # Replace this with the desired fixed value
-        hv_lv = torch.full((n_lv, n_dim), fixed_value, dtype=torch.int)
-        hv_id = torch.full((n_id, n_dim), fixed_value, dtype=torch.int)
-
+        hv_lv = torch.randint(0, 2, size=(n_lv, n_dim), dtype=torch.int) * 2 - 1
+        hv_id = torch.randint(0, 2, size=(n_id, n_dim), dtype=torch.int) * 2 - 1
     elif method == "cyclic":
         hv_lv = gen_cyclic_lv_hvs(n_dim, n_lv)
         hv_lv = torch.from_numpy(hv_lv).int()
@@ -114,6 +117,7 @@ def generate_lv_id_hvs(n_lv, n_id, n_dim, method="random"):
         NotImplementedError(f"Unknown method {method} to generate level and ID HVs")
 
     return hv_lv, hv_id
+
 
 class HDC_ID_LV:
     def __init__(
@@ -126,11 +130,8 @@ class HDC_ID_LV:
         self.hv_lv, self.hv_id = generate_lv_id_hvs(
             n_lv, n_id, n_dim, method=method_id_lv
         )
+
         self.class_hvs = torch.zeros(n_class, n_dim, dtype=torch.int)
-
-
-    def get_class_hvs(self): 
-        return self.class_hvs
 
     def encode(self, inp, dense=True):
         # ID-LV encoding
@@ -140,13 +141,13 @@ class HDC_ID_LV:
             inp_enc = torch.zeros(n_batch, self.n_dim, dtype=torch.int)
             for i in tqdm.tqdm(range(n_batch)):
                 # Vectorized version
-                # inp_enc[i] = (self.hv_id * self.hv_lv[inp[i].long()]).sum(dim=0)
-                
+                inp_enc[i] = (self.hv_id * self.hv_lv[inp[i].long()]).sum(dim=0)
+
                 # Serial version
-                tmp = torch.zeros(1, self.n_dim, dtype=torch.int)
-                for j in range(self.n_id):
-                    tmp = tmp + (self.hv_id[j] * self.hv_lv[inp[i][j]])
-                inp_enc[i] = tmp
+                # tmp = torch.zeros(1, self.n_dim, dtype=torch.int)
+                # for j in range(self.n_id):
+                # tmp = tmp + (self.hv_id[j] * self.hv_lv[inp_quant[i][j]])
+                # inp_enc[i] = tmp
         else:
             n_batch = inp["lv"].shape[0]
             inp_enc = torch.zeros(n_batch, self.n_dim, dtype=torch.int)
@@ -155,8 +156,8 @@ class HDC_ID_LV:
                 lv = inp["lv"][i, idx_effective].long()
                 id = inp["idx"][i, idx_effective].long()
                 inp_enc[i] = (self.hv_id[id] * self.hv_lv[lv]).sum(dim=0)
-            
         return binarize(inp_enc).int() if self.binary else inp_enc
+
 
 class HDC_RP:
     def __init__(self, n_class, n_feat, n_dim, binary=True) -> None:

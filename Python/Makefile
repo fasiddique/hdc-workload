@@ -3,7 +3,7 @@ all: run
 .PHONY: run
 
 run: 
-	$(PYTHON) hd_classification.py
+	$(PYTHON) hd_classification.py 
 
 test_driver: 
 	$(PYTHON) test_driver.py

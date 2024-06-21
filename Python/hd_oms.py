@@ -5,7 +5,6 @@ import tqdm
 import model
 import utils
 
-
 # %% Load Mass Spec. Dataset
 dim_spectra = 34976
 charge = 2
@@ -16,6 +15,8 @@ query_fname = f"./dataset/iPRG2012_vec_{dim_spectra}.charge{charge}.npz"
 ds_ref, ds_query = utils.load_dataset(
     name="OMS_iPRG_demo", path=[ref_fname, query_fname]
 )
+
+
 
 n_ref, n_query = len(ds_ref["pr_mzs"]), len(ds_query["pr_mzs"])
 
@@ -61,7 +62,6 @@ query_enc = hdc_model.encode(
     dense=False,
 )  # Just pick up a few samples for quick evaluation
 
-
 # %% Database Search
 dist = torch.matmul(query_enc, ref_enc.T)
 if hdc_model.binary:
@@ -69,3 +69,4 @@ if hdc_model.binary:
 else:
     dist = dist / ref_enc.float().norm(dim=1)
     pred = dist.argmax(dim=-1)
+
