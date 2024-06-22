@@ -100,7 +100,8 @@ public:
      * 
      * @return 0 if the dataset was loaded successfully, 1 otherwise.
      */
-    int load_dataset();
+
+    int load_dataset(std::string& dataset_name); 
 
     /**
      * @brief Calculates the checksum of the dataset.
@@ -146,10 +147,10 @@ bool Dataset::read_parameters(const std::string &filename) {
     return true;
 }
 
-int Dataset::load_dataset() {
-    std::string base_path = "./dataset/" + std::string(DATASET) + "/";
+int Dataset::load_dataset(std::string& dataset_name) {
+    std::string base_path = "./dataset/" + dataset_name + "/";
 
-    if (!read_parameters(base_path + "parameters")) {
+    if (!read_parameters(base_path + "dataset_parameters")) {
         return 1;
     }
 

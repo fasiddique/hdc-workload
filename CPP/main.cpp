@@ -21,8 +21,8 @@ bool test_dataset() {
     // Create a Dataset object
     Dataset dataset;
 
-    //  
-    if (dataset.load_dataset() != 0) {
+    std::string dataset_name("EMG_Hand");
+    if (dataset.load_dataset(dataset_name) != 0) {
         std::cerr << "Failed to load the dataset" << std::endl;
         return true;
     }
@@ -73,39 +73,93 @@ bool test_dataset() {
     return false;
 }
 
+/**
+ * @brief Read the HDC parameters from the file.
+ */
+bool open_hdc_parameters(std::string dataset_name, int& n_dim, bool& binary, int& train_epochs, int& n_lv, int& n_class) {
+    std::string filename = "./dataset/" + dataset_name + "/hdc_parameters";
+    std::ifstream file(filename);
+    
+    if (!file.is_open()) {
+        std::cerr << "Error opening file " << filename << std::endl;
+        return true;
+    }
+
+    std::string line;
+    
+    std::getline(file, line);
+    n_dim = std::stoi(line);
+
+    
+    std::getline(file, line);
+    binary = std::stoi(line);
+
+
+
+    std::getline(file, line);
+    train_epochs = std::stoi(line);
+
+    
+
+    std::getline(file, line);
+    n_lv = std::stoi(line);
+
+    
+
+    std::getline(file, line);
+    n_class = std::stoi(line);
+
+    
+    return false;
+    
+}
 
 /**
  * @brief Test function for the HDC class.
  */
-bool train_test() {
+bool train_test(std::string& dataset_name) {
 
     // TODO: avoid hardcoding 
-    int N_DIM = 2048;
-    bool BINARY = false;
+    int n_dim = 2048;
+    bool binary = false;
     // Initialize inputs for testing
     int n_class = 5; 
     int n_lv = 21; 
+    int train_epochs = 20;
+    
 
     // Create a Dataset object
     Dataset dataset;
 
-    int n_id = dataset.sample_size;
-    
-    if (dataset.load_dataset() != 0) {
+    if (open_hdc_parameters(dataset_name, n_dim, binary, train_epochs, n_lv, n_class)) {
+        return true;
+    }
+
+    std::cout << "INFO: n_dim = " << n_dim << std::endl;
+    std::cout << "INFO: binary = " << binary << std::endl;
+    std::cout << "INFO: n_class = " << n_class << std::endl;
+    std::cout << "INFO: n_lv = " << n_lv << std::endl; 
+    std::cout << "INFO: train_epochs = " << train_epochs << std::endl;
+
+    if (dataset.load_dataset(dataset_name) != 0) {
         std::cerr << "Failed to load the dataset" << std::endl;
         return true;
     }
 
+    int n_id = dataset.sample_size;
+    
+    
     // Print dataset parameters
-    std::cout << "Test Size: " << dataset.test_size << std::endl;
-    std::cout << "Train Size: " << dataset.train_size << std::endl;
-    std::cout << "Sample Size: " << dataset.sample_size << std::endl;
+    std::cout << "INFO: Test Size: " << dataset.test_size << std::endl;
+    std::cout << "INFO: Train Size: " << dataset.train_size << std::endl;
+    std::cout << "INFO: Sample Size: " << dataset.sample_size << std::endl;
 
     auto ds_train = dataset.get_trainset();
     auto ds_test = dataset.get_testset();
 
+    
     // HDC Model
-    HDC hdc_model(n_class, n_lv, n_id, N_DIM, BINARY);
+    HDC hdc_model(n_class, n_lv, n_id, n_dim, binary);
 
     // HDC Encoding Step
     std::vector<std::vector<int>> train_enc = hdc_model.encode(ds_train.first);
@@ -120,10 +174,9 @@ bool train_test() {
     std::cout << "Init. test acc. is " << test_acc << std::endl;
 
 
+    
     // Re-training
-    int train_epochs = 20;
     int val_epochs = 5;
-
     for (int i = 0; i < train_epochs; ++i) {
         hdc_model.train(train_enc, ds_train.second);
 
@@ -149,12 +202,20 @@ bool train_test() {
 
 
 
-int main() {
-    bool result = train_test();
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " <dataset_name>" << std::endl;
+        return 1;
+    }
+
+    std::string dataset_name(argv[1]);
+    bool result = train_test(dataset_name);
+
     if (result) {
         std::cerr << "Test failed." << std::endl;
         return 1;
     }
+
     std::cout << "Test passed." << std::endl;
     return 0;
 }

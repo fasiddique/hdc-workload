@@ -139,6 +139,8 @@ def save_hdc_params(dataset_name, n_dim=2048, binary=False, train_epochs=20, n_l
         line = str(n_lv)
         file.write(line + "\n")
 
+        line = str(n_class)
+        file.write(n_class + "\n")
 
 def get_checksum(data_train, data_test):
     acc = 0

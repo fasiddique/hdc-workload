@@ -5,7 +5,7 @@ import model
 import utils
 from debug_utils import *
 
-def save_hdc_params(dataset_name, n_dim=2048, binary=False, train_epochs=20, n_lv=32):
+def save_hdc_params(dataset_name, n_dim=2048, binary=False, train_epochs=20, n_lv=32, n_class=5):
      filename = '../CPP/dataset/' + dataset_name + '/hdc_parameters'
      with open(filename, 'w') as file:
          line = str(n_dim)
@@ -19,6 +19,10 @@ def save_hdc_params(dataset_name, n_dim=2048, binary=False, train_epochs=20, n_l
 
          line = str(n_lv)
          file.write(line + "\n")
+
+         line = str(int(n_class))
+         file.write(line + "\n")
+
 
 def train_and_evaluate_hdc_model(dataset_name, n_dim=2048, binary=False, train_epochs=20, val_epochs=5):
     # Load dataset
@@ -39,7 +43,7 @@ def train_and_evaluate_hdc_model(dataset_name, n_dim=2048, binary=False, train_e
         )
         ds_test = (model.min_max_quantize(ds_test[0], int(math.log2(n_lv) - 1)), ds_test[1])
 
-    save_hdc_params(dataset_name, n_dim, binary, train_epochs, n_lv)
+    save_hdc_params(dataset_name, n_dim, binary, train_epochs, n_lv, n_class)
     # HDC Model
     hdc_model = model.HDC_ID_LV(
         n_class=n_class, n_lv=n_lv, n_id=n_id, n_dim=n_dim, binary=binary
@@ -72,5 +76,6 @@ def train_and_evaluate_hdc_model(dataset_name, n_dim=2048, binary=False, train_e
 datasets = ["EMG_Hand", "MNIST", "UCIHAR", "ISOLET"]
 
 for dataset in datasets:
+    print("INFO: starting dataset ", dataset)
     train_and_evaluate_hdc_model(dataset_name=dataset)
-
+    print()
