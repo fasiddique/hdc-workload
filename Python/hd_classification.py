@@ -4,6 +4,7 @@ import tqdm
 import model
 import utils
 from debug_utils import *
+import time
 
 def save_hdc_params(dataset_name, n_dim=2048, binary=False, train_epochs=20, n_lv=32, n_class=5):
      filename = '../CPP/dataset/' + dataset_name + '/hdc_parameters'
@@ -66,7 +67,19 @@ def train_and_evaluate_hdc_model(dataset_name, n_dim=2048, binary=False, train_e
             test_acc = model.test(hdc_model, inp_enc=test_enc, target=ds_test[1])
             print(f"INFO: Test acc. for {dataset_name} @ epoch {i+1}/{train_epochs} is {test_acc:.4f}")
 
+    # Start the timer
+    start_time = time.time()
+
+    # Code segment to measure
     test_acc = model.test(hdc_model, inp_enc=test_enc, target=ds_test[1])
+
+    # End the timer
+    end_time = time.time()
+
+    # Calculate the elapsed time
+    elapsed_time = end_time - start_time
+
+    print(f"Execution time: {elapsed_time} seconds")
     print(f"INFO: Final test acc. for {dataset_name} is {test_acc:.4f}")
 
     if binary:
@@ -79,3 +92,6 @@ for dataset in datasets:
     print("INFO: starting dataset ", dataset)
     train_and_evaluate_hdc_model(dataset_name=dataset)
     print()
+
+
+
