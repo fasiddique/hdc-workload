@@ -5,10 +5,18 @@ import model
 import utils
 from debug_utils import *
 import time
+import argparse
+import os
 
 def save_hdc_params(dataset_name, n_dim=2048, binary=False, train_epochs=20, n_lv=32, n_class=5):
-     filename = '../CPP/dataset/' + dataset_name + '/hdc_parameters'
-     with open(filename, 'w') as file:
+    directory = f'../CPP/dataset/{dataset_name}'
+    filename = os.path.join(directory, 'hdc_parameters')
+
+    # Create the directory if it does not exist
+    if not os.path.exists(directory):
+        os.mkdirs(directory)
+
+    with open(filename, 'w') as file:
          line = str(n_dim)
          file.write(line + "\n")
 
@@ -25,7 +33,7 @@ def save_hdc_params(dataset_name, n_dim=2048, binary=False, train_epochs=20, n_l
          file.write(line + "\n")
 
 
-def train_and_evaluate_hdc_model(dataset_name, n_dim=2048, binary=False, train_epochs=20, val_epochs=5):
+def train_and_evaluate_hdc_model(dataset_name, only_parse_dataset, n_dim=2048, binary=False, train_epochs=20, val_epochs=5):
     # Load dataset
     ds_train, ds_test = utils.load_dataset(name=dataset_name)
     utils.save_dataset(ds_train, ds_test, name=dataset_name)
@@ -45,6 +53,9 @@ def train_and_evaluate_hdc_model(dataset_name, n_dim=2048, binary=False, train_e
         ds_test = (model.min_max_quantize(ds_test[0], int(math.log2(n_lv) - 1)), ds_test[1])
 
     save_hdc_params(dataset_name, n_dim, binary, train_epochs, n_lv, n_class)
+
+    if only_parse_dataset:
+        return
     # HDC Model
     hdc_model = model.HDC_ID_LV(
         n_class=n_class, n_lv=n_lv, n_id=n_id, n_dim=n_dim, binary=binary
@@ -79,19 +90,37 @@ def train_and_evaluate_hdc_model(dataset_name, n_dim=2048, binary=False, train_e
     # Calculate the elapsed time
     elapsed_time = end_time - start_time
 
-    print(f"Execution time: {elapsed_time} seconds")
+    print(f"INFO: Execution time = {elapsed_time} seconds")
     print(f"INFO: Final test acc. for {dataset_name} is {test_acc:.4f}")
 
     if binary:
         hdc_model.class_hvs = hdc_model.class_hvs.sign()
 
-# List of datasets to iterate over
-datasets = ["EMG_Hand", "MNIST", "UCIHAR", "ISOLET"]
+def main():
+    # List of datasets to iterate over
+    datasets = ["EMG_Hand", "MNIST", "UCIHAR", "ISOLET"]
 
-for dataset in datasets:
-    print("INFO: starting dataset ", dataset)
-    train_and_evaluate_hdc_model(dataset_name=dataset)
-    print()
+    parser = argparse.ArgumentParser(description='HDC classification')
+    parser.add_argument('--dataset', type=str, required=True, help='The name of the dataset to process')
+    parser.add_argument('--only-parse-dataset', action='store_true', help='Flag to indicate if the dataset should be parsed and exit')
+
+    args = parser.parse_args()
+
+    print(f"Dataset: {args.dataset}")
+    if args.only_parse_dataset:
+        print("Parsing the dataset...")
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"INFO: device: {device}")
 
 
+    if args.dataset == "all":
+        for dataset in datasets:
+            print("INFO: starting dataset ", dataset)
+            train_and_evaluate_hdc_model(dataset_name=dataset, only_parse_dataset=args.only_parse_dataset)
+            print()
+    else:
+        train_and_evaluate_hdc_model(dataset_name=args.dataset, only_parse_dataset=args.only_parse_dataset)
 
+if __name__ == "__main__":
+    main()

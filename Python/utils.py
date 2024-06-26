@@ -3,6 +3,7 @@ import tqdm
 import numpy as np
 import torchhd
 import torchvision
+import os
 
 DATASETS = ["MNIST", "ISOLET", "EMG_Hand", "UCIHAR", "OMS_iPRG_demo"]
 
@@ -87,7 +88,13 @@ def load_dataset(name, path=None):
 
 
 def save_dataset(data_train, data_test, name):
-    filename = '../CPP/dataset/' + name + '/train.val'
+    directory = f'../CPP/dataset/{name}'
+
+    # Create the directory if it does not exist
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    filename = os.path.join(directory, 'train.val')
     with open(filename, 'w') as file:
         for sample in data_train[0]:
             line = ""
@@ -95,13 +102,13 @@ def save_dataset(data_train, data_test, name):
                 line += str(value.item()) + " "
             file.write(line + "\n")
 
-    filename = '../CPP/dataset/' + name + '/train.label'
+    filename = os.path.join(directory, 'train.label')
     with open(filename, 'w') as file:
         for label in data_train[1]:
             line = str(label.item())
             file.write(line + "\n")
 
-    filename = '../CPP/dataset/' + name + '/test.val'
+    filename = os.path.join(directory, 'test.val')
     with open(filename, 'w') as file:
         for sample in data_test[0]:
             line = ""
@@ -109,7 +116,7 @@ def save_dataset(data_train, data_test, name):
                 line += str(value.item()) + " "
             file.write(line + "\n")
 
-    filename = '../CPP/dataset/' + name + '/test.label'
+    filename = os.path.join(directory, 'test.label')
     with open(filename, 'w') as file:
         for label in data_test[1]:
             line = str(label.item())
@@ -119,28 +126,9 @@ def save_dataset(data_train, data_test, name):
     train_size = data_train[1].size()[0]
     sample_size = data_train[0][1].size()[0]
     line = str(test_size) + "\n" + str(train_size) + "\n" + str(sample_size)
-    filename = '../CPP/dataset/' + name + '/dataset_parameters'
+    filename = os.path.join(directory, 'dataset_parameters')
     with open(filename, 'w') as file:
         file.write(line + "\n")
-
-
-def save_hdc_params(dataset_name, n_dim=2048, binary=False, train_epochs=20, n_lv=32):
-    filename = '../CPP/dataset/' + dataset_name + '/hdc_parameters'
-    with open(filename, 'w') as file:
-        line = str(n_dim)
-        file.write(line + "\n")
-
-        line = str(int(binary))
-        file.write(line + "\n")
-
-        line = str(train_epochs)
-        file.write(line + "\n")
-
-        line = str(n_lv)
-        file.write(line + "\n")
-
-        line = str(n_class)
-        file.write(n_class + "\n")
 
 def get_checksum(data_train, data_test):
     acc = 0
